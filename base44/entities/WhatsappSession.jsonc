@@ -1,0 +1,39 @@
+{
+  "name": "WhatsappSession",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "session_data": {
+      "type": "string",
+      "description": "Serialized session JSON"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "disconnected",
+        "waiting_qr"
+      ],
+      "default": "disconnected"
+    },
+    "last_connected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "qr_code": {
+      "type": "string",
+      "description": "Current QR code data URL"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

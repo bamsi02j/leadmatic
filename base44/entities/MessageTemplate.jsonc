@@ -1,0 +1,44 @@
+{
+  "name": "MessageTemplate",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string",
+      "description": "Template content with {{variables}}"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bienvenue",
+        "relance",
+        "suivi",
+        "confirmation",
+        "faq",
+        "custom"
+      ],
+      "default": "custom"
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of variable names used in template"
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "content",
+    "category"
+  ]
+}

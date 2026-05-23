@@ -1,0 +1,54 @@
+{
+  "name": "Automation",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Automation name"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "nouveau",
+        "contact\u00e9",
+        "converti",
+        "perdu",
+        "message_received"
+      ],
+      "description": "What triggers this automation"
+    },
+    "delay_minutes": {
+      "type": "number",
+      "default": 60,
+      "description": "Delay in minutes before sending"
+    },
+    "message_template": {
+      "type": "string",
+      "description": "Message template with {{variables}}"
+    },
+    "template_id": {
+      "type": "string",
+      "description": "Reference to message template"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "total_triggered": {
+      "type": "number",
+      "default": 0
+    },
+    "total_sent": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "trigger_type",
+    "message_template"
+  ]
+}

@@ -1,0 +1,234 @@
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Users, Plus, Search, Filter, Phone, X, Loader2, ChevronDown } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import LeadCard from "@/components/leads/LeadCard";
+import StatusBadge from "@/components/ui/StatusBadge";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
+
+const STATUSES = ["tous", "nouveau", "contacté", "converti", "perdu"];
+const STATUS_OPTIONS = ["nouveau", "contacté", "converti", "perdu"];
+
+function LeadModal({ lead, onClose, onSave, onDelete }) {
+  const [form, setForm] = useState({
+    name: lead?.name || "",
+    phone: lead?.phone || "",
+    email: lead?.email || "",
+    status: lead?.status || "nouveau",
+    notes: lead?.notes || "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.name || !form.phone) return;
+    setSaving(true);
+    await onSave(form);
+    setSaving(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 20 }}
+        className="card-surface w-full max-w-md p-6"
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold text-foreground">{lead ? "Modifier le lead" : "Nouveau lead"}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/8 text-muted-foreground transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {["name", "phone", "email"].map((field) => (
+            <div key={field}>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block capitalize">
+                {field === "name" ? "Nom *" : field === "phone" ? "Téléphone *" : "Email"}
+              </label>
+              <input
+                type={field === "email" ? "email" : "text"}
+                value={form[field]}
+                onChange={e => setForm({ ...form, [field]: e.target.value })}
+                placeholder={field === "phone" ? "+221 77 000 0000" : ""}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-all"
+              />
+            </div>
+          ))}
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Statut</label>
+            <select
+              value={form.status}
+              onChange={e => setForm({ ...form, status: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary/50 transition-all"
+            >
+              {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notes</label>
+            <textarea
+              value={form.notes}
+              onChange={e => setForm({ ...form, notes: e.target.value })}
+              rows={3}
+              placeholder="Notes sur ce lead..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-all resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          {lead && (
+            <button onClick={() => onDelete(lead)} className="flex-1 py-2.5 rounded-xl border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/10 transition-colors">
+              Supprimer
+            </button>
+          )}
+          <button onClick={handleSave} disabled={saving || !form.name || !form.phone}
+            className="flex-1 gradient-violet text-white py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-40">
+            {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            {saving ? "Enregistrement..." : "Enregistrer"}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export default function Leads() {
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("tous");
+  const [search, setSearch] = useState("");
+  const [modal, setModal] = useState(null); // null | "new" | lead object
+
+  const fetchLeads = async () => {
+    const data = await base44.entities.Lead.list("-created_date", 100);
+    setLeads(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchLeads(); }, []);
+
+  const filtered = leads.filter(l => {
+    const matchStatus = filter === "tous" || l.status === filter;
+    const matchSearch = !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.phone.includes(search);
+    return matchStatus && matchSearch;
+  });
+
+  const handleSave = async (form) => {
+    if (modal === "new") {
+      await base44.entities.Lead.create({ ...form, source: "manual" });
+    } else {
+      await base44.entities.Lead.update(modal.id, form);
+    }
+    setModal(null);
+    fetchLeads();
+  };
+
+  const handleDelete = async (lead) => {
+    await base44.entities.Lead.delete(lead.id);
+    setModal(null);
+    fetchLeads();
+  };
+
+  const handleQuickStatus = async (lead, status) => {
+    await base44.entities.Lead.update(lead.id, { status });
+    setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status } : l));
+  };
+
+  const counts = STATUSES.reduce((acc, s) => {
+    acc[s] = s === "tous" ? leads.length : leads.filter(l => l.status === s).length;
+    return acc;
+  }, {});
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Leads</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">{leads.length} leads au total</p>
+        </div>
+        <button
+          onClick={() => setModal("new")}
+          className="gradient-violet glow-violet-sm text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+        >
+          <Plus className="w-4 h-4" /> Nouveau lead
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-xl px-3 py-2 flex-1 min-w-48 max-w-64">
+          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Nom, téléphone..."
+            className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-full"
+          />
+        </div>
+        <div className="flex gap-1.5">
+          {STATUSES.map(s => (
+            <button
+              key={s}
+              onClick={() => setFilter(s)}
+              className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                filter === s
+                  ? "gradient-violet text-white"
+                  : "bg-white/5 border border-white/8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+              }`}
+            >
+              {s === "tous" ? "Tous" : s.charAt(0).toUpperCase() + s.slice(1)}
+              <span className="ml-1 opacity-60">({counts[s]})</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {Array(8).fill(0).map((_, i) => <div key={i} className="h-32 bg-white/5 rounded-xl animate-pulse" />)}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <Users className="w-12 h-12 text-muted-foreground mb-3 opacity-30" />
+          <p className="text-foreground font-medium">Aucun lead trouvé</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {search ? "Essayez d'autres termes de recherche" : "Ajoutez votre premier lead"}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <AnimatePresence>
+            {filtered.map(lead => (
+              <LeadCard key={lead.id} lead={lead} onClick={() => setModal(lead)} />
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+
+      <AnimatePresence>
+        {modal && (
+          <LeadModal
+            lead={modal === "new" ? null : modal}
+            onClose={() => setModal(null)}
+            onSave={handleSave}
+            onDelete={handleDelete}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

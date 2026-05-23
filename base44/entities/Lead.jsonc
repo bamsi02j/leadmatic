@@ -1,0 +1,44 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "Tenant company ID"
+    },
+    "name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "nouveau",
+        "contact\u00e9",
+        "converti",
+        "perdu"
+      ],
+      "default": "nouveau"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Agent email"
+    },
+    "source": {
+      "type": "string",
+      "description": "Lead source (whatsapp, manual, etc.)"
+    }
+  },
+  "required": [
+    "name",
+    "phone"
+  ]
+}

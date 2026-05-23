@@ -1,0 +1,38 @@
+{
+  "name": "Company",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Company name"
+    },
+    "industry": {
+      "type": "string",
+      "description": "Industry sector"
+    },
+    "whatsapp_phone": {
+      "type": "string",
+      "description": "WhatsApp phone number"
+    },
+    "ai_api_key": {
+      "type": "string",
+      "description": "OpenAI/Claude API key"
+    },
+    "ai_provider": {
+      "type": "string",
+      "enum": [
+        "openai",
+        "claude"
+      ],
+      "default": "openai"
+    }
+  },
+  "required": [
+    "name",
+    "user_id"
+  ]
+}
