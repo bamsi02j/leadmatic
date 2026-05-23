@@ -85,20 +85,20 @@ export default function Dashboard() {
   const avgResponseTime = "< 2h"; // indicatif
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Vue d'ensemble de votre activité</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Vue d'ensemble de votre activité</p>
         </div>
-        <div className="flex items-center gap-2 bg-white/5 border border-white/8 rounded-xl px-3 py-2">
-          <Activity className="w-4 h-4 text-primary" />
-          <span className="text-sm text-muted-foreground">7 derniers jours</span>
+        <div className="flex items-center gap-2 bg-white/5 border border-white/8 rounded-xl px-3 py-2 text-xs sm:text-sm flex-shrink-0">
+          <Activity className="w-4 h-4 text-primary flex-shrink-0" />
+          <span className="text-muted-foreground whitespace-nowrap">7 derniers jours</span>
         </div>
       </div>
 
       {/* WhatsApp CRM Widgets */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           {
             icon: PhoneCall,
@@ -138,25 +138,25 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
-            className="card-surface p-4 flex flex-col gap-3"
+            className="card-surface p-3 sm:p-4 flex flex-col gap-3"
           >
-            <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: w.bg }}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: w.bg }}>
                 <w.icon className="w-4 h-4" style={{ color: w.color }} />
               </div>
-              <span className="text-xs text-muted-foreground font-medium px-2 py-1 rounded-lg bg-white/5">WhatsApp</span>
+              <span className="text-xs text-muted-foreground font-medium px-2 py-1 rounded-lg bg-white/5 whitespace-nowrap">WhatsApp</span>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{w.value}</p>
-              <p className="text-xs font-medium mt-0.5" style={{ color: w.color }}>{w.label}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{w.sub}</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-foreground break-words">{w.value}</p>
+              <p className="text-xs font-medium mt-0.5 break-words" style={{ color: w.color }}>{w.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 break-words line-clamp-2">{w.sub}</p>
             </div>
           </motion.div>
         ))}
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatsCard title="Total Leads" value={totalLeads} icon={Users} color="violet" subtitle="Tous statuts confondus" />
         <StatsCard title="Leads Convertis" value={convertedLeads} icon={TrendingUp} color="green" subtitle={`${conversionRate}% taux de conversion`} />
         <StatsCard title="Messages non lus" value={unreadMessages} icon={MessageSquare} color="amber" subtitle="À traiter" />
@@ -164,11 +164,11 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Area chart */}
-        <div className="lg:col-span-2 card-surface p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Activité — 7 derniers jours</h3>
-          <ResponsiveContainer width="100%" height={200}>
+        <div className="lg:col-span-2 card-surface p-3 sm:p-5">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4">Activité — 7 derniers jours</h3>
+          <ResponsiveContainer width="100%" height={160} className="sm:h-[200px]">
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
@@ -191,9 +191,9 @@ export default function Dashboard() {
         </div>
 
         {/* Bar chart statuses */}
-        <div className="card-surface p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Leads par statut</h3>
-          <ResponsiveContainer width="100%" height={200}>
+        <div className="card-surface p-3 sm:p-5">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4">Leads par statut</h3>
+          <ResponsiveContainer width="100%" height={160} className="sm:h-[200px]">
             <BarChart data={statusData} layout="vertical">
               <XAxis type="number" tick={{ fill: "#94A3B8", fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis dataKey="name" type="category" tick={{ fill: "#94A3B8", fontSize: 10 }} axisLine={false} tickLine={false} width={55} />
@@ -212,10 +212,10 @@ export default function Dashboard() {
       <FollowUpCalendar />
 
       {/* Recent leads */}
-      <div className="card-surface p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-foreground">Leads récents</h3>
-          <Link to="/leads" className="text-xs text-primary flex items-center gap-1 hover:text-primary/80 transition-colors">
+      <div className="card-surface p-3 sm:p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground">Leads récents</h3>
+          <Link to="/leads" className="text-xs text-primary flex items-center gap-1 hover:text-primary/80 transition-colors flex-shrink-0">
             Voir tout <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
@@ -234,17 +234,19 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-2">
             {recentLeads.map((lead) => (
-              <div key={lead.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-white/4 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-xs font-bold text-foreground">
+              <div key={lead.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 py-2.5 px-3 rounded-xl hover:bg-white/4 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-xs font-bold text-foreground flex-shrink-0">
                     {lead.name?.[0]?.toUpperCase()}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{lead.name}</p>
-                    <p className="text-xs text-muted-foreground">{lead.phone}</p>
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-foreground truncate">{lead.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{lead.phone}</p>
                   </div>
                 </div>
-                <StatusBadge status={lead.status} />
+                <div className="flex-shrink-0">
+                  <StatusBadge status={lead.status} />
+                </div>
               </div>
             ))}
           </div>
