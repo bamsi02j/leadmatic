@@ -10,7 +10,7 @@ import Dashboard from '@/pages/Dashboard';
 import Inbox from '@/pages/Inbox';
 import Leads from '@/pages/Leads';
 import Automations from '@/pages/Automations';
-import WhatsApp from '@/pages/WhatsApp';
+import WhatsApp from '@/pages/WhatsApp.jsx';
 import Settings from '@/pages/Settings';
 
 const AuthenticatedApp = () => {

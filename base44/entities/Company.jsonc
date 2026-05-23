@@ -16,7 +16,23 @@
     },
     "whatsapp_phone": {
       "type": "string",
-      "description": "WhatsApp phone number"
+      "description": "WhatsApp phone number (display)"
+    },
+    "whatsapp_access_token": {
+      "type": "string",
+      "description": "Meta WhatsApp Business API access token"
+    },
+    "whatsapp_phone_number_id": {
+      "type": "string",
+      "description": "Meta WhatsApp Phone Number ID"
+    },
+    "whatsapp_business_account_id": {
+      "type": "string",
+      "description": "Meta WhatsApp Business Account ID (WABA)"
+    },
+    "whatsapp_webhook_verify_token": {
+      "type": "string",
+      "description": "Webhook verify token for Meta"
     },
     "ai_api_key": {
       "type": "string",
