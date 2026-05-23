@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Mail, Clock, MoreHorizontal, Bell } from "lucide-react";
+import { Phone, Mail, Clock, MoreHorizontal, Bell, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -12,7 +12,6 @@ const COLUMNS = [
   { key: "perdu",     label: "Perdu",     color: "text-red-400",     bg: "bg-red-500/8",    border: "border-red-500/20",   dot: "bg-red-400",    headerBg: "bg-red-500/10" },
 ];
 
-// Transitions "importantes" qui déclenchent une notif
 const IMPORTANT_TRANSITIONS = {
   "nouveau→converti": "🎉 Lead converti directement !",
   "contacté→converti": "✅ Lead converti avec succès !",
@@ -20,7 +19,7 @@ const IMPORTANT_TRANSITIONS = {
   "nouveau→perdu": "⚠️ Lead perdu sans contact",
 };
 
-function KanbanCard({ lead, index, col, onEdit }) {
+function KanbanCard({ lead, index, col, onEdit, onOpenConversation }) {
   const initials = lead.name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
   const age = lead.created_date
     ? formatDistanceToNow(new Date(lead.created_date), { addSuffix: true, locale: fr })
@@ -38,7 +37,7 @@ function KanbanCard({ lead, index, col, onEdit }) {
             transition-all duration-150
             ${snapshot.isDragging
               ? "shadow-2xl shadow-primary/20 scale-105 rotate-1 border-primary/40 bg-card z-50"
-              : `border-white/8 hover:border-white/16 hover:bg-card`
+              : "border-white/8 hover:border-white/16 hover:bg-card"
             }
           `}
         >
@@ -54,12 +53,22 @@ function KanbanCard({ lead, index, col, onEdit }) {
                 )}
               </div>
             </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); onEdit(lead); }}
-              className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-white/10 text-muted-foreground transition-all"
-            >
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+              <button
+                onClick={(e) => { e.stopPropagation(); onOpenConversation?.(lead); }}
+                className="p-1 rounded-lg hover:bg-primary/15 text-primary/70 hover:text-primary transition-all"
+                title="Ouvrir la conversation"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(lead); }}
+                className="p-1 rounded-lg hover:bg-white/10 text-muted-foreground transition-all"
+                title="Modifier"
+              >
+                <MoreHorizontal className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -112,7 +121,7 @@ function NotificationToast({ notif, onClose }) {
   );
 }
 
-export default function KanbanBoard({ leads, onLeadUpdate, onEdit }) {
+export default function KanbanBoard({ leads, onLeadUpdate, onEdit, onOpenConversation }) {
   const [notifications, setNotifications] = useState([]);
 
   const fireNotification = (leadName, fromStatus, toStatus) => {
@@ -127,22 +136,16 @@ export default function KanbanBoard({ leads, onLeadUpdate, onEdit }) {
   const onDragEnd = async (result) => {
     const { draggableId, destination, source } = result;
     if (!destination) return;
-
     const fromStatus = source.droppableId;
     const toStatus = destination.droppableId;
-    if (fromStatus === toStatus && source.index === destination.index) return;
     if (fromStatus === toStatus) return;
-
     const lead = leads.find(l => l.id === draggableId);
     if (!lead) return;
-
-    // Optimistic update
     onLeadUpdate(draggableId, toStatus);
     fireNotification(lead.name, fromStatus, toStatus);
   };
 
-  const getLeadsForCol = (colKey) =>
-    leads.filter(l => l.status === colKey);
+  const getLeadsForCol = (colKey) => leads.filter(l => l.status === colKey);
 
   return (
     <>
@@ -152,7 +155,6 @@ export default function KanbanBoard({ leads, onLeadUpdate, onEdit }) {
             const colLeads = getLeadsForCol(col.key);
             return (
               <div key={col.key} className="flex flex-col">
-                {/* Column header */}
                 <div className={`flex items-center justify-between px-3 py-2.5 rounded-xl mb-2 ${col.bg} border ${col.border}`}>
                   <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${col.dot}`} />
@@ -163,7 +165,6 @@ export default function KanbanBoard({ leads, onLeadUpdate, onEdit }) {
                   </span>
                 </div>
 
-                {/* Droppable column */}
                 <Droppable droppableId={col.key}>
                   {(provided, snapshot) => (
                     <div
@@ -186,14 +187,20 @@ export default function KanbanBoard({ leads, onLeadUpdate, onEdit }) {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9 }}
                           >
-                            <KanbanCard lead={lead} index={index} col={col} onEdit={onEdit} />
+                            <KanbanCard
+                              lead={lead}
+                              index={index}
+                              col={col}
+                              onEdit={onEdit}
+                              onOpenConversation={onOpenConversation}
+                            />
                           </motion.div>
                         ))}
                       </AnimatePresence>
                       {provided.placeholder}
                       {colLeads.length === 0 && !snapshot.isDraggingOver && (
                         <div className="flex flex-col items-center justify-center h-24 text-center">
-                          <span className={`text-2xl opacity-20`}>○</span>
+                          <span className="text-2xl opacity-20">○</span>
                           <p className="text-[11px] text-muted-foreground/40 mt-1">Glisser ici</p>
                         </div>
                       )}
@@ -211,7 +218,6 @@ export default function KanbanBoard({ leads, onLeadUpdate, onEdit }) {
         </div>
       </DragDropContext>
 
-      {/* Notifications */}
       <AnimatePresence>
         {notifications.map(notif => (
           <NotificationToast
