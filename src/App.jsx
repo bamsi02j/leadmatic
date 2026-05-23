@@ -12,6 +12,7 @@ import Leads from '@/pages/Leads';
 import Automations from '@/pages/Automations';
 import WhatsApp from '@/pages/WhatsApp';
 import Settings from '@/pages/Settings';
+import Pipeline from '@/pages/Pipeline';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
         <Route path="/leads" element={<Leads />} />
         <Route path="/automations" element={<Automations />} />
         <Route path="/whatsapp" element={<WhatsApp />} />
+        <Route path="/pipeline" element={<Pipeline />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

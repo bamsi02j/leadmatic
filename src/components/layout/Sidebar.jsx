@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, MessageSquare, Users, Zap, Settings,
-  Smartphone, ChevronLeft, ChevronRight, LogOut, Sparkles
+  Smartphone, ChevronLeft, ChevronRight, LogOut, Sparkles, GitBranch
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
@@ -11,6 +11,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: MessageSquare, label: "Inbox", path: "/inbox", badge: null },
   { icon: Users, label: "Leads", path: "/leads" },
+  { icon: GitBranch, label: "Pipeline", path: "/pipeline" },
   { icon: Zap, label: "Automations", path: "/automations" },
   { icon: Smartphone, label: "WhatsApp", path: "/whatsapp" },
   { icon: Settings, label: "Paramètres", path: "/settings" },
