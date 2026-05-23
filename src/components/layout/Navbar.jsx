@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Bell, Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import NotificationCenter from "@/components/layout/NotificationCenter";
 
 export default function Navbar({ sidebarWidth = 260 }) {
   const [user, setUser] = useState(null);
@@ -34,10 +35,7 @@ export default function Navbar({ sidebarWidth = 260 }) {
 
       <div className="flex items-center gap-3 ml-auto">
         {/* Notifications */}
-        <button className="relative w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center hover:bg-white/10 transition-colors">
-          <Bell className="w-4 h-4 text-muted-foreground" />
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full"></span>
-        </button>
+        <NotificationCenter />
 
         {/* Profile */}
         <div className="relative">
