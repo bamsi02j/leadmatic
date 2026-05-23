@@ -12,7 +12,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 240 12% 7%;
     --popover-foreground: 210 40% 98%;
-    --primary: 147 77% 35%;
+    --primary: 151 63% 45%;
     --primary-foreground: 210 40% 98%;
     --secondary: 240 10% 10%;
     --secondary-foreground: 210 40% 98%;
@@ -89,7 +89,7 @@
   }
 
   .gradient-violet {
-    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    background: linear-gradient(135deg, #25D366, #20BA60);
   }
 
   .gradient-text {
