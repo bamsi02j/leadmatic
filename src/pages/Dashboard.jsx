@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import StatsCard from "@/components/ui/StatsCard";
 import StatusBadge from "@/components/ui/StatusBadge";
+import FollowUpCalendar from "@/components/dashboard/FollowUpCalendar";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -136,6 +137,9 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Follow-up Calendar */}
+      <FollowUpCalendar />
 
       {/* Recent leads */}
       <div className="card-surface p-5">
