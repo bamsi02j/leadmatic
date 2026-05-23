@@ -112,17 +112,17 @@ function NotificationToast({ notif, onClose }) {
       initial={{ opacity: 0, x: 50, scale: 0.9 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 50, scale: 0.9 }}
-      className="fixed top-6 right-6 z-[100] flex items-start gap-3 card-surface border border-primary/20 p-4 rounded-xl shadow-2xl shadow-black/40 max-w-sm"
+      className="fixed top-6 right-6 z-[100] flex items-start gap-2 sm:gap-3 card-surface border border-primary/20 p-2.5 sm:p-4 rounded-xl shadow-2xl shadow-black/40 max-w-xs sm:max-w-sm"
     >
-      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-        <Bell className="w-4 h-4 text-primary" />
+      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+        <Bell className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
       </div>
-      <div className="flex-1">
-        <p className="text-xs font-semibold text-foreground mb-0.5">Notification équipe</p>
-        <p className="text-xs text-muted-foreground">{notif.message}</p>
-        <p className="text-[11px] text-primary mt-1 font-medium">{notif.leadName}</p>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] sm:text-xs font-semibold text-foreground mb-0.5">Notification équipe</p>
+        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{notif.message}</p>
+        <p className="text-[10px] text-primary mt-1 font-medium truncate">{notif.leadName}</p>
       </div>
-      <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none mt-0.5">×</button>
+      <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors text-sm sm:text-lg leading-none mt-0.5 flex-shrink-0">×</button>
     </motion.div>
   );
 }

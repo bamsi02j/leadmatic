@@ -215,7 +215,7 @@ export default function Leads() {
               />
             </div>
             {/* Temperature filter */}
-            <div className="flex gap-1.5">
+            <div className="flex gap-1 sm:gap-1.5">
               {[
                 { key: "tous", label: "Tous" },
                 { key: "chaud", label: "🔥 Chauds" },
@@ -225,7 +225,7 @@ export default function Leads() {
                 <button
                   key={t.key}
                   onClick={() => setTempFilter(t.key)}
-                  className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                  className={`px-2 py-1 sm:px-3 sm:py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${
                     tempFilter === t.key
                       ? "gradient-violet text-white"
                       : "bg-white/5 border border-white/8 text-muted-foreground hover:text-foreground hover:bg-white/10"
