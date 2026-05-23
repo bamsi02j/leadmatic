@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Plus, Search, Filter, Phone, X, Loader2, ChevronDown } from "lucide-react";
+import { Users, Plus, Search, X, Loader2, LayoutGrid, Kanban } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LeadCard from "@/components/leads/LeadCard";
+import KanbanBoard from "@/components/leads/KanbanBoard";
 import StatusBadge from "@/components/ui/StatusBadge";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
 
 const STATUSES = ["tous", "nouveau", "contacté", "converti", "perdu"];
 const STATUS_OPTIONS = ["nouveau", "contacté", "converti", "perdu"];
@@ -51,7 +50,7 @@ function LeadModal({ lead, onClose, onSave, onDelete }) {
         <div className="space-y-4">
           {["name", "phone", "email"].map((field) => (
             <div key={field}>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block capitalize">
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 {field === "name" ? "Nom *" : field === "phone" ? "Téléphone *" : "Email"}
               </label>
               <input
@@ -71,7 +70,7 @@ function LeadModal({ lead, onClose, onSave, onDelete }) {
               onChange={e => setForm({ ...form, status: e.target.value })}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary/50 transition-all"
             >
-              {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+              {STATUS_OPTIONS.map(s => <option key={s} value={s} className="bg-background">{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </select>
           </div>
 
@@ -109,7 +108,8 @@ export default function Leads() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("tous");
   const [search, setSearch] = useState("");
-  const [modal, setModal] = useState(null); // null | "new" | lead object
+  const [modal, setModal] = useState(null);
+  const [view, setView] = useState("kanban"); // "grid" | "kanban"
 
   const fetchLeads = async () => {
     const data = await base44.entities.Lead.list("-created_date", 100);
@@ -121,7 +121,7 @@ export default function Leads() {
 
   const filtered = leads.filter(l => {
     const matchStatus = filter === "tous" || l.status === filter;
-    const matchSearch = !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.phone.includes(search);
+    const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search);
     return matchStatus && matchSearch;
   });
 
@@ -141,9 +141,10 @@ export default function Leads() {
     fetchLeads();
   };
 
-  const handleQuickStatus = async (lead, status) => {
-    await base44.entities.Lead.update(lead.id, { status });
-    setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status } : l));
+  // Called by KanbanBoard on drag — optimistic update + persist
+  const handleLeadUpdate = async (leadId, newStatus) => {
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+    await base44.entities.Lead.update(leadId, { status: newStatus });
   };
 
   const counts = STATUSES.reduce((acc, s) => {
@@ -153,20 +154,40 @@ export default function Leads() {
 
   return (
     <div className="p-6 space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Leads</h1>
           <p className="text-muted-foreground text-sm mt-0.5">{leads.length} leads au total</p>
         </div>
-        <button
-          onClick={() => setModal("new")}
-          className="gradient-violet glow-violet-sm text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
-        >
-          <Plus className="w-4 h-4" /> Nouveau lead
-        </button>
+        <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <div className="flex bg-white/5 border border-white/8 rounded-xl p-1">
+            <button
+              onClick={() => setView("kanban")}
+              className={`p-1.5 rounded-lg transition-all ${view === "kanban" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              title="Vue Kanban"
+            >
+              <Kanban className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setView("grid")}
+              className={`p-1.5 rounded-lg transition-all ${view === "grid" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              title="Vue Grille"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
+          <button
+            onClick={() => setModal("new")}
+            className="gradient-violet glow-violet-sm text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+          >
+            <Plus className="w-4 h-4" /> Nouveau lead
+          </button>
+        </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters — shown in grid view or for search in kanban */}
       <div className="flex gap-2 flex-wrap">
         <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-xl px-3 py-2 flex-1 min-w-48 max-w-64">
           <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -178,29 +199,37 @@ export default function Leads() {
             className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-full"
           />
         </div>
-        <div className="flex gap-1.5">
-          {STATUSES.map(s => (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                filter === s
-                  ? "gradient-violet text-white"
-                  : "bg-white/5 border border-white/8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-              }`}
-            >
-              {s === "tous" ? "Tous" : s.charAt(0).toUpperCase() + s.slice(1)}
-              <span className="ml-1 opacity-60">({counts[s]})</span>
-            </button>
-          ))}
-        </div>
+        {view === "grid" && (
+          <div className="flex gap-1.5 flex-wrap">
+            {STATUSES.map(s => (
+              <button
+                key={s}
+                onClick={() => setFilter(s)}
+                className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                  filter === s
+                    ? "gradient-violet text-white"
+                    : "bg-white/5 border border-white/8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                }`}
+              >
+                {s === "tous" ? "Tous" : s.charAt(0).toUpperCase() + s.slice(1)}
+                <span className="ml-1 opacity-60">({counts[s]})</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Grid */}
+      {/* Content */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {Array(8).fill(0).map((_, i) => <div key={i} className="h-32 bg-white/5 rounded-xl animate-pulse" />)}
         </div>
+      ) : view === "kanban" ? (
+        <KanbanBoard
+          leads={filtered}
+          onLeadUpdate={handleLeadUpdate}
+          onEdit={(lead) => setModal(lead)}
+        />
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Users className="w-12 h-12 text-muted-foreground mb-3 opacity-30" />
