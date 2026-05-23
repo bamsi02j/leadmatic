@@ -3,6 +3,8 @@ import { Phone, MessageSquare, Clock, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import StatusBadge from "@/components/ui/StatusBadge";
+import TemperatureBadge from "@/components/leads/TemperatureBadge";
+import { getLeadTemperature } from "@/utils/leadTemperature";
 
 const statusColors = {
   nouveau: "border-l-blue-500",
@@ -11,7 +13,8 @@ const statusColors = {
   perdu: "border-l-red-500",
 };
 
-export default function LeadCard({ lead, onStatusChange, onClick }) {
+export default function LeadCard({ lead, onStatusChange, onClick, messages = [] }) {
+  const temperature = getLeadTemperature(lead, messages);
   const time = lead.created_date
     ? formatDistanceToNow(new Date(lead.created_date), { addSuffix: true, locale: fr })
     : "";
@@ -45,7 +48,10 @@ export default function LeadCard({ lead, onStatusChange, onClick }) {
       </div>
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-        <StatusBadge status={lead.status} />
+        <div className="flex items-center gap-1.5">
+          <StatusBadge status={lead.status} />
+          <TemperatureBadge temperature={temperature} />
+        </div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Clock className="w-3 h-3" />
           {time}

@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Phone, Mail, Clock, MoreHorizontal, Bell, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import TemperatureBadge from "@/components/leads/TemperatureBadge";
+import { getLeadTemperature } from "@/utils/leadTemperature";
 
 const COLUMNS = [
   { key: "nouveau",   label: "Nouveau",   color: "text-blue-400",    bg: "bg-blue-500/8",   border: "border-blue-500/20",  dot: "bg-blue-400",   headerBg: "bg-blue-500/10" },
@@ -19,7 +21,8 @@ const IMPORTANT_TRANSITIONS = {
   "nouveau→perdu": "⚠️ Lead perdu sans contact",
 };
 
-function KanbanCard({ lead, index, col, onEdit, onOpenConversation }) {
+function KanbanCard({ lead, index, col, onEdit, onOpenConversation, messages = [] }) {
+  const temperature = getLeadTemperature(lead, messages);
   const initials = lead.name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
   const age = lead.created_date
     ? formatDistanceToNow(new Date(lead.created_date), { addSuffix: true, locale: fr })
@@ -90,9 +93,12 @@ function KanbanCard({ lead, index, col, onEdit, onOpenConversation }) {
             </p>
           )}
 
-          <div className="flex items-center gap-1 mt-2 pt-2 border-t border-white/5">
-            <Clock className="w-2.5 h-2.5 text-muted-foreground/50" />
-            <span className="text-[10px] text-muted-foreground/50">{age}</span>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+            <TemperatureBadge temperature={temperature} />
+            <div className="flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5 text-muted-foreground/50" />
+              <span className="text-[10px] text-muted-foreground/50">{age}</span>
+            </div>
           </div>
         </div>
       )}
@@ -121,7 +127,7 @@ function NotificationToast({ notif, onClose }) {
   );
 }
 
-export default function KanbanBoard({ leads, onLeadUpdate, onEdit, onOpenConversation }) {
+export default function KanbanBoard({ leads, messages = [], onLeadUpdate, onEdit, onOpenConversation }) {
   const [notifications, setNotifications] = useState([]);
 
   const fireNotification = (leadName, fromStatus, toStatus) => {
@@ -193,6 +199,7 @@ export default function KanbanBoard({ leads, onLeadUpdate, onEdit, onOpenConvers
                               col={col}
                               onEdit={onEdit}
                               onOpenConversation={onOpenConversation}
+                              messages={messages}
                             />
                           </motion.div>
                         ))}

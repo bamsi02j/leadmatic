@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import LeadCard from "@/components/leads/LeadCard";
 import KanbanBoard from "@/components/leads/KanbanBoard";
 import LeadConversationPanel from "@/components/leads/LeadConversationPanel";
+import { getLeadTemperature } from "@/utils/leadTemperature";
 
 const STATUSES = ["tous", "nouveau", "contacté", "converti", "perdu"];
 const STATUS_OPTIONS = ["nouveau", "contacté", "converti", "perdu"];
@@ -101,16 +102,22 @@ function LeadModal({ lead, onClose, onSave, onDelete }) {
 
 export default function Leads() {
   const [leads, setLeads] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("tous");
+  const [tempFilter, setTempFilter] = useState("tous");
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
   const [view, setView] = useState("kanban");
   const [activeConversation, setActiveConversation] = useState(null); // lead object
 
   const fetchLeads = async () => {
-    const data = await base44.entities.Lead.list("-created_date", 100);
-    setLeads(data);
+    const [leadsData, messagesData] = await Promise.all([
+      base44.entities.Lead.list("-created_date", 100),
+      base44.entities.Message.list("-created_date", 200),
+    ]);
+    setLeads(leadsData);
+    setMessages(messagesData);
     setLoading(false);
   };
 
@@ -127,7 +134,8 @@ export default function Leads() {
   const filtered = leads.filter(l => {
     const matchStatus = filter === "tous" || l.status === filter;
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search);
-    return matchStatus && matchSearch;
+    const matchTemp = tempFilter === "tous" || getLeadTemperature(l, messages) === tempFilter;
+    return matchStatus && matchSearch && matchTemp;
   });
 
   const handleSave = async (form) => {
@@ -206,6 +214,27 @@ export default function Leads() {
                 className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-full"
               />
             </div>
+            {/* Temperature filter */}
+            <div className="flex gap-1.5">
+              {[
+                { key: "tous", label: "Tous" },
+                { key: "chaud", label: "🔥 Chauds" },
+                { key: "tiède", label: "🌡️ Tièdes" },
+                { key: "froid", label: "❄️ Froids" },
+              ].map(t => (
+                <button
+                  key={t.key}
+                  onClick={() => setTempFilter(t.key)}
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                    tempFilter === t.key
+                      ? "gradient-violet text-white"
+                      : "bg-white/5 border border-white/8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
             {view === "grid" && (
               <div className="flex gap-1.5 flex-wrap">
                 {STATUSES.map(s => (
@@ -234,6 +263,7 @@ export default function Leads() {
           ) : view === "kanban" ? (
             <KanbanBoard
               leads={filtered}
+              messages={messages}
               onLeadUpdate={handleLeadUpdate}
               onEdit={(lead) => setModal(lead)}
               onOpenConversation={(lead) => setActiveConversation(lead)}

@@ -6,6 +6,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import StatsCard from "@/components/ui/StatsCard";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FollowUpCalendar from "@/components/dashboard/FollowUpCalendar";
+import HotLeadsAlert from "@/components/leads/HotLeadsAlert";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -28,6 +29,7 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alertDismissed, setAlertDismissed] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,6 +98,15 @@ export default function Dashboard() {
           <span className="text-muted-foreground whitespace-nowrap">7 derniers jours</span>
         </div>
       </div>
+
+      {/* Hot Leads Alert */}
+      {!alertDismissed && !loading && (
+        <HotLeadsAlert
+          leads={leads}
+          messages={messages}
+          onDismiss={() => setAlertDismissed(true)}
+        />
+      )}
 
       {/* WhatsApp CRM Widgets */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
