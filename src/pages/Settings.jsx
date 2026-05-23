@@ -169,7 +169,8 @@ function TemplatesTab() {
 
   useEffect(() => {
     const load = async () => {
-      const data = await base44.entities.MessageTemplate.list("-created_date", 50);
+      const user = await base44.auth.me();
+      const data = await base44.entities.MessageTemplate.filter({ created_by: user.email }, "-created_date", 50);
       setTemplates(data);
       setLoading(false);
     };

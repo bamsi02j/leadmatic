@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Plus, X, Loader2, Clock, FileText } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AutomationCard from "@/components/automations/AutomationCard";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const TRIGGER_OPTIONS = [
   { value: "nouveau", label: "Nouveau lead" },
@@ -161,14 +162,16 @@ export default function Automations() {
   const [automations, setAutomations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
+  const { user } = useCurrentUser();
 
   const fetchAutomations = async () => {
-    const data = await base44.entities.Automation.list("-created_date", 50);
+    if (!user) return;
+    const data = await base44.entities.Automation.filter({ created_by: user.email }, "-created_date", 50);
     setAutomations(data);
     setLoading(false);
   };
 
-  useEffect(() => { fetchAutomations(); }, []);
+  useEffect(() => { if (user) fetchAutomations(); }, [user]);
 
   const handleSave = async (form) => {
     if (modal === "new") {

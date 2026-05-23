@@ -6,6 +6,7 @@ import LeadCard from "@/components/leads/LeadCard";
 import KanbanBoard from "@/components/leads/KanbanBoard";
 import LeadConversationPanel from "@/components/leads/LeadConversationPanel";
 import { getLeadTemperature } from "@/utils/leadTemperature";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const STATUSES = ["tous", "nouveau", "contacté", "converti", "perdu"];
 const STATUS_OPTIONS = ["nouveau", "contacté", "converti", "perdu"];
@@ -109,19 +110,21 @@ export default function Leads() {
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
   const [view, setView] = useState("kanban");
-  const [activeConversation, setActiveConversation] = useState(null); // lead object
+  const [activeConversation, setActiveConversation] = useState(null);
+  const { user } = useCurrentUser();
 
   const fetchLeads = async () => {
+    if (!user) return;
     const [leadsData, messagesData] = await Promise.all([
-      base44.entities.Lead.list("-created_date", 100),
-      base44.entities.Message.list("-created_date", 200),
+      base44.entities.Lead.filter({ created_by: user.email }, "-created_date", 100),
+      base44.entities.Message.filter({ created_by: user.email }, "-created_date", 200),
     ]);
     setLeads(leadsData);
     setMessages(messagesData);
     setLoading(false);
   };
 
-  useEffect(() => { fetchLeads(); }, []);
+  useEffect(() => { if (user) fetchLeads(); }, [user]);
 
   // Keep activeConversation in sync with leads state
   useEffect(() => {

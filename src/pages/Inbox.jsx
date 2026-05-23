@@ -6,6 +6,7 @@ import MessageCard from "@/components/inbox/MessageCard";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const AI_SUGGESTIONS = [
   "Bonjour ! Merci de nous avoir contacté. Comment puis-je vous aider aujourd'hui ?",
@@ -25,23 +26,25 @@ export default function Inbox() {
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [showDetail, setShowDetail] = useState(false);
   const messagesEndRef = useRef(null);
+  const { user } = useCurrentUser();
 
   const fetchMessages = async () => {
-    const data = await base44.entities.Message.list("-created_date", 50);
+    if (!user) return;
+    const data = await base44.entities.Message.filter({ created_by: user.email }, "-created_date", 50);
     setMessages(data);
     setLoading(false);
   };
 
   useEffect(() => {
+    if (!user) return;
     fetchMessages();
-    // Real-time subscription
     const unsub = base44.entities.Message.subscribe((event) => {
-      if (event.type === "create") setMessages(prev => [event.data, ...prev]);
+      if (event.type === "create" && event.data?.created_by === user.email) setMessages(prev => [event.data, ...prev]);
       if (event.type === "update") setMessages(prev => prev.map(m => m.id === event.id ? event.data : m));
       if (event.type === "delete") setMessages(prev => prev.filter(m => m.id !== event.id));
     });
     return unsub;
-  }, []);
+  }, [user]);
 
   const selectMessage = async (msg) => {
     setSelected(msg);

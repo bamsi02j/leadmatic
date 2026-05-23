@@ -10,6 +10,7 @@ import HotLeadsAlert from "@/components/leads/HotLeadsAlert";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) {
@@ -30,19 +31,21 @@ export default function Dashboard() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alertDismissed, setAlertDismissed] = useState(false);
+  const { user } = useCurrentUser();
 
   useEffect(() => {
+    if (!user) return;
     const fetchData = async () => {
       const [leadsData, messagesData] = await Promise.all([
-        base44.entities.Lead.list("-created_date", 100),
-        base44.entities.Message.list("-created_date", 50),
+        base44.entities.Lead.filter({ created_by: user.email }, "-created_date", 100),
+        base44.entities.Message.filter({ created_by: user.email }, "-created_date", 50),
       ]);
       setLeads(leadsData);
       setMessages(messagesData);
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   const totalLeads = leads.length;
   const convertedLeads = leads.filter(l => l.status === "converti").length;

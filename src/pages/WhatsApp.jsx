@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Smartphone, CheckCircle, WifiOff, Clock, Activity, MessageSquare, Users, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import QRConnectCard from "@/components/whatsapp/QRConnectCard";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -19,25 +20,28 @@ export default function WhatsApp() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ messages: 0, leadsCreated: 0 });
+  const { user } = useCurrentUser();
 
   useEffect(() => {
+    if (!user) return;
+
     const fetchSession = async () => {
-      const sessions = await base44.entities.WhatsappSession.list("-created_date", 1);
+      const sessions = await base44.entities.WhatsappSession.filter({ created_by: user.email }, "-created_date", 1);
       setSession(sessions[0] || null);
       setLoading(false);
     };
 
     const fetchStats = async () => {
       const [messages, leads] = await Promise.all([
-        base44.entities.Message.list("-created_date", 100),
-        base44.entities.Lead.filter({ source: "whatsapp" }, "-created_date", 100),
+        base44.entities.Message.filter({ created_by: user.email }, "-created_date", 100),
+        base44.entities.Lead.filter({ created_by: user.email, source: "whatsapp" }, "-created_date", 100),
       ]);
       setStats({ messages: messages.length, leadsCreated: leads.length });
     };
 
     fetchSession();
     fetchStats();
-  }, []);
+  }, [user]);
 
   const handleConnect = async () => {
     // Create or update session in waiting_qr state
