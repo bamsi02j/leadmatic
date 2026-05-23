@@ -31,10 +31,16 @@ export default function Sidebar({ unreadCount = 0, collapsed, onToggle }) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/5">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 font-bold text-white text-sm" style={{ background: "linear-gradient(135deg, #25D366 0%, #20BA60 100%)", boxShadow: "0 4px 12px rgba(37, 211, 102, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)" }}>
-          LM
+        {/* Icon mark */}
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #25D366 0%, #128C4A 100%)", boxShadow: "0 4px 14px rgba(37, 211, 102, 0.35), inset 0 1px 0 rgba(255,255,255,0.18)" }}>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Chat bubble */}
+            <path d="M11 2C6.03 2 2 5.8 2 10.5c0 1.9.65 3.65 1.75 5.07L2.5 19.5l4.2-1.2A9.3 9.3 0 0 0 11 19c4.97 0 9-3.8 9-8.5S15.97 2 11 2Z" fill="white" fillOpacity="0.95"/>
+            {/* Lightning bolt inside */}
+            <path d="M12.4 7l-3 4h2.5l-1 4 3.5-4.5H12l1-3.5H12.4Z" fill="#25D366" stroke="#25D366" strokeWidth="0.3" strokeLinejoin="round"/>
+          </svg>
         </div>
-          <AnimatePresence>
+        <AnimatePresence>
           {!collapsed && (
             <motion.div
               initial={{ opacity: 0, x: -10 }}
@@ -42,8 +48,11 @@ export default function Sidebar({ unreadCount = 0, collapsed, onToggle }) {
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.15 }}
             >
-              <span className="text-lg font-bold" style={{ color: "#25D366" }}>LeadMatC</span>
-              <p className="text-xs text-muted-foreground">CRM WhatsApp</p>
+              <div className="flex items-baseline gap-0.5">
+                <span className="text-base font-extrabold tracking-tight text-foreground">Lead</span>
+                <span className="text-base font-extrabold tracking-tight" style={{ color: "#25D366" }}>matic</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground/70 tracking-wide uppercase">CRM WhatsApp</p>
             </motion.div>
           )}
         </AnimatePresence>
