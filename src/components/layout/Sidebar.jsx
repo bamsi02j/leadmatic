@@ -11,7 +11,6 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: MessageSquare, label: "Inbox", path: "/inbox", badge: null },
   { icon: Users, label: "Leads", path: "/leads" },
-  { icon: GitBranch, label: "Pipeline", path: "/pipeline" },
   { icon: Zap, label: "Automations", path: "/automations" },
   { icon: Smartphone, label: "WhatsApp", path: "/whatsapp" },
   { icon: Settings, label: "Paramètres", path: "/settings" },
